@@ -10,10 +10,15 @@ Here is the documentation for Boost 'Pre' and 'Post' Campaign analysis.
 # MCDONALDS
 
 #geofence result 
+
 data = "s3a://ada-dev/fatin/geofence/result/boost_mcd/boost_mcd/part-00000-07f9db77-2038-4607-9a38-d621a00bbf9f-c000.csv.gz"
-geo = sqlContext.read.load(data, format = 'com.databricks.spark.csv', header='false',inferSchema='true')  
+
+geo = sqlContext.read.load(data, format = 'com.databricks.spark.csv', header='false',inferSchema='true') 
+
 geo.count()
+
 41564
+
 ```text
 +-------+------------------------------------+--------+
 |_c0    |_c1                                 |_c2     |
@@ -26,7 +31,9 @@ geo.count()
 +-------+------------------------------------+--------+
 ```
 geo = geo.drop('_c2')
+
 geo = geo.withColumnRenamed('_c0','device_type')
+
 geo1 = geo.withColumnRenamed('_c1','ifa')
 ```text
 +-----------+------------------------------------+
@@ -40,12 +47,17 @@ geo1 = geo.withColumnRenamed('_c1','ifa')
 +-----------+------------------------------------+
 ```
 #merge with persona table (march 2019)
+
 data5 = "s3a://ada-dev/zankai/playstore-bundle/output-playstore-wide-201903/*.snappy.parquet"
+
 asn_wide = sqlContext.read.parquet(data5)
+
 asn_wide.count()
+
 13180614 
 
 asn_wide = asn_wide.select('ifa','Money_Managers')
+
 ```text
 +------------------------------------+--------------+                           
 |ifa                                 |Money_Managers|
@@ -58,8 +70,11 @@ asn_wide = asn_wide.select('ifa','Money_Managers')
 +------------------------------------+--------------+
 ```
 join = geo1.join(asn_wide, geo1.ifa == asn_wide.ifa,how='inner').drop(geo1.ifa)
+
 join.count()
+
 41564
+
 ```text
 +-----------+------------------------------------+--------------+               
 |device_type|ifa                                 |Money_Managers|
@@ -72,14 +87,21 @@ join.count()
 +-----------+------------------------------------+--------------+
 ```
 mm = join.filter(join['Money_Managers'] > 0)
+
 mm.count()
+
 129
 
 #merge with boost data (march 2019)
+
 data_path = "s3a://ada-dev/fatin/boost/campaign/2019_04_17_cid_maid.csv"
+
 boost = sqlContext.read.load(data_path, format = 'com.databricks.spark.csv', header='true',inferSchema='true')  
+
 boost.count()
+
 1134749
+
 ```text
 +------------------------+------------------------------------+
 |customerId              |MAID                                |
@@ -92,11 +114,13 @@ boost.count()
 +------------------------+------------------------------------+
 ```
 boost = boost.drop('customerId')
+
 boost = boost.withColumnRenamed('MAID','ifa')
 
 from pyspark.sql.functions import lit
 
 boost1 = boost.withColumn('boost_user', lit(1))
+
 ```text
 +------------------------------------+----------+
 |ifa                                 |boost_user|
@@ -109,10 +133,13 @@ boost1 = boost.withColumn('boost_user', lit(1))
 +------------------------------------+----------+
 ```
 final = mm.join(boost1, mm.ifa==boost1.ifa,how='left').dropDuplicates().drop(boost1.ifa)
+
 final.count()
+
 129 
 
-final1 = final.na.fill(0)                                                           
+final1 = final.na.fill(0) 
+
 ```text
 +-----------+------------------------------------+--------------+----------+    
 |device_type|ifa                                 |Money_Managers|boost_user|
