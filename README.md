@@ -15,7 +15,7 @@ data = "s3a://ada-dev/fatin/geofence/result/boost_mcd/boost_mcd/part-00000-07f9d
 geo = sqlContext.read.load(data, format = 'com.databricks.spark.csv', header='false',inferSchema='true')  
 geo.count()
 41564
-
+```text
 +-------+------------------------------------+--------+
 |_c0    |_c1                                 |_c2     |
 +-------+------------------------------------+--------+
@@ -25,11 +25,11 @@ geo.count()
 |android|4f89466a-972f-4fa4-baa7-754488d5722c|14000365|
 |android|41e3f8e9-a42c-4b12-8e6f-729716703136|13001694|
 +-------+------------------------------------+--------+
-
+```
 geo = geo.drop('_c2')
 geo = geo.withColumnRenamed('_c0','device_type')
 geo1 = geo.withColumnRenamed('_c1','ifa')
-
+```text
 +-----------+------------------------------------+
 |device_type|ifa                                 |
 +-----------+------------------------------------+
@@ -39,7 +39,7 @@ geo1 = geo.withColumnRenamed('_c1','ifa')
 |android    |4f89466a-972f-4fa4-baa7-754488d5722c|
 |android    |41e3f8e9-a42c-4b12-8e6f-729716703136|
 +-----------+------------------------------------+
-
+```
 #merge with persona table (march 2019)
 data5 = "s3a://ada-dev/zankai/playstore-bundle/output-playstore-wide-201903/*.snappy.parquet"
 asn_wide = sqlContext.read.parquet(data5)
@@ -47,7 +47,7 @@ asn_wide.count()
 13180614 
 
 asn_wide = asn_wide.select('ifa','Money_Managers')
-
+```text
 +------------------------------------+--------------+                           
 |ifa                                 |Money_Managers|
 +------------------------------------+--------------+
@@ -57,11 +57,11 @@ asn_wide = asn_wide.select('ifa','Money_Managers')
 |c9393c8d-70ca-42f8-b5cd-2120090c8a4e|0             |
 |5a99db4e-de3f-4479-a877-6ec27fb5637b|0             |
 +------------------------------------+--------------+
-
+```
 join = geo1.join(asn_wide, geo1.ifa == asn_wide.ifa,how='inner').drop(geo1.ifa)
 join.count()
 41564
-
+```text
 +-----------+------------------------------------+--------------+               
 |device_type|ifa                                 |Money_Managers|
 +-----------+------------------------------------+--------------+
@@ -71,7 +71,7 @@ join.count()
 |android    |8cfc5337-c08c-473a-bfc6-f9b13c9c16d6|0             |
 |android    |0cfde98e-ddcd-41b9-acdf-7dabcfa94ac1|0             |
 +-----------+------------------------------------+--------------+
-
+```
 mm = join.filter(join['Money_Managers'] > 0)
 mm.count()
 129
@@ -81,7 +81,7 @@ data_path = "s3a://ada-dev/fatin/boost/campaign/2019_04_17_cid_maid.csv"
 boost = sqlContext.read.load(data_path, format = 'com.databricks.spark.csv', header='true',inferSchema='true')  
 boost.count()
 1134749
-
+```text
 +------------------------+------------------------------------+
 |customerId              |MAID                                |
 +------------------------+------------------------------------+
@@ -91,13 +91,14 @@ boost.count()
 |5c7054e2b375bb000789ffc0|6fed81b8-8eec-4b17-b8c8-dc9ccc968b62|
 |5ba3a739c307ad0007f0c405|b0f64a55-4b51-4016-962d-8f1a44e3a0a1|
 +------------------------+------------------------------------+
-
+```
 boost = boost.drop('customerId')
 boost = boost.withColumnRenamed('MAID','ifa')
 
 from pyspark.sql.functions import lit
 
 boost1 = boost.withColumn('boost_user', lit(1))
+```text
 +------------------------------------+----------+
 |ifa                                 |boost_user|
 +------------------------------------+----------+
@@ -107,13 +108,13 @@ boost1 = boost.withColumn('boost_user', lit(1))
 |6fed81b8-8eec-4b17-b8c8-dc9ccc968b62|1         |
 |b0f64a55-4b51-4016-962d-8f1a44e3a0a1|1         |
 +------------------------------------+----------+
-
+```
 final = mm.join(boost1, mm.ifa==boost1.ifa,how='left').dropDuplicates().drop(boost1.ifa)
 final.count()
 129 
 
 final1 = final.na.fill(0)                                                           
-
+```text
 +-----------+------------------------------------+--------------+----------+    
 |device_type|ifa                                 |Money_Managers|boost_user|
 +-----------+------------------------------------+--------------+----------+
@@ -123,3 +124,4 @@ final1 = final.na.fill(0)
 |android    |ff73bc70-f8b5-420f-96fe-ecb7dd85c724|1             |0         |
 |android    |fcd560d9-7b9a-4070-87bf-9526cda199aa|1             |0         |
 +-----------+------------------------------------+--------------+----------+
+```
