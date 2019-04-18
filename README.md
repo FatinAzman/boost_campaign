@@ -7,7 +7,6 @@ Here is the documentation for Boost 'Pre' and 'Post' Campaign analysis.
 3.	Start using PySpark in Cloud9, the scripts are as follow;
 
 
-################################################################################################
 # MCDONALDS
 
 #geofence result 
