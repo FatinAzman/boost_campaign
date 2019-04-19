@@ -88,6 +88,8 @@ join.count()
 ```
 mm = join.filter(join['Money_Managers'] > 0)
 
+mm = mm.drop('Money_Managers')
+
 mm.count()
 
 129
