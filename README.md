@@ -15,9 +15,7 @@ data = "s3a://ada-dev/fatin/geofence/result/boost_mcd/boost_mcd/part-00000-07f9d
 
 geo = sqlContext.read.load(data, format = 'com.databricks.spark.csv', header='false',inferSchema='true') 
 
-geo.count()
-
-41564
+geo.count() #41564
 
 ```text
 +-------+------------------------------------+--------+
@@ -30,69 +28,61 @@ geo.count()
 |android|41e3f8e9-a42c-4b12-8e6f-729716703136|13001694|
 +-------+------------------------------------+--------+
 ```
-geo = geo.drop('_c2')
-
-geo = geo.withColumnRenamed('_c0','device_type')
+geo = geo.drop('_c0','_c2')
 
 geo1 = geo.withColumnRenamed('_c1','ifa')
+
 ```text
-+-----------+------------------------------------+
-|device_type|ifa                                 |
-+-----------+------------------------------------+
-|android    |b784f414-319e-4f19-a119-d7a9172877c4|
-|android    |0992ba36-4c8a-45cc-b4ae-d682280c053c|
-|android    |7d2098a4-67dc-4707-b334-704a7be78da7|
-|android    |4f89466a-972f-4fa4-baa7-754488d5722c|
-|android    |41e3f8e9-a42c-4b12-8e6f-729716703136|
-+-----------+------------------------------------+
++------------------------------------+
+|ifa                                 |
++------------------------------------+
+|b784f414-319e-4f19-a119-d7a9172877c4|
+|0992ba36-4c8a-45cc-b4ae-d682280c053c|
+|7d2098a4-67dc-4707-b334-704a7be78da7|
+|4f89466a-972f-4fa4-baa7-754488d5722c|
+|41e3f8e9-a42c-4b12-8e6f-729716703136|
++------------------------------------+
 ```
 #merge with persona table (march 2019)
 
-data5 = "s3a://ada-dev/zankai/playstore-bundle/output-playstore-wide-201903/*.snappy.parquet"
+data5 = "s3a://ada-dev/zankai/playstore-bundle/output-special-201903/Boost_persona_mar19/*.snappy.parquet"
 
 asn_wide = sqlContext.read.parquet(data5)
 
-asn_wide.count()
+asn_wide.count() #13180614 
 
-13180614 
-
-asn_wide = asn_wide.select('ifa','Money_Managers')
+asn_wide = asn_wide.select('ifa','Money-Managers')
 
 ```text
 +------------------------------------+--------------+                           
-|ifa                                 |Money_Managers|
+|ifa                                 |Money-Managers|
 +------------------------------------+--------------+
-|fee836d9-1f82-4fe1-8bd2-39db51f69f24|0             |
-|5210bd0b-cde4-4d14-8ec4-8c7c17d82d36|0             |
-|f35d80bc-bbf9-46ff-9f81-547e84753237|0             |
-|c9393c8d-70ca-42f8-b5cd-2120090c8a4e|0             |
-|5a99db4e-de3f-4479-a877-6ec27fb5637b|0             |
+|64410391-a991-4bb4-8e8f-abc16c7d1355|0             |
+|01a820fb-7145-49f0-ac32-4607729e8370|0             |
+|18e138af-ea44-463a-975a-8c3edaf11bfb|0             |
+|2317c6a9-bb20-410e-aef5-de5dd58b81b6|0             |
+|261723cc-c211-4695-8884-ea3e9f0cc5cc|0             |
 +------------------------------------+--------------+
 ```
 join = geo1.join(asn_wide, geo1.ifa == asn_wide.ifa,how='inner').drop(geo1.ifa)
 
-join.count()
-
-41564
+join.count() #41564
 
 ```text
-+-----------+------------------------------------+--------------+               
-|device_type|ifa                                 |Money_Managers|
-+-----------+------------------------------------+--------------+
-|android    |3e383e08-cf13-40a1-9ff0-dd351b82b478|0             |
-|android    |99adf554-8865-4c67-bc9f-c7a3d36ec922|0             |
-|android    |64cfbea5-5e22-4cc7-8bf4-3672889f1ae2|0             |
-|android    |8cfc5337-c08c-473a-bfc6-f9b13c9c16d6|0             |
-|android    |0cfde98e-ddcd-41b9-acdf-7dabcfa94ac1|0             |
-+-----------+------------------------------------+--------------+
++------------------------------------+--------------+                           
+|ifa                                 |Money-Managers|
++------------------------------------+--------------+
+|e0620016-0d4a-47f1-a3fa-09cb2c124767|0             |
+|ea97fa94-5d34-4f91-8510-23f92099646b|0             |
+|09dbcf81-b530-462d-a1f4-8e7271b4f9d6|0             |
+|6026752d-4f8f-426d-96fa-a89a8c67ad52|0             |
+|29878626-9d19-4e06-99f3-17559c2ce999|0             |
++------------------------------------+--------------+
 ```
-mm = join.filter(join['Money_Managers'] > 0)
+mm = join.filter(join['Money-Managers'] > 0)
 
-mm = mm.drop('Money_Managers')
+mm.count() #2151 
 
-mm.count()
-
-129
 
 #merge with boost data (march 2019)
 
@@ -100,9 +90,7 @@ data_path = "s3a://ada-dev/fatin/boost/campaign/2019_04_17_cid_maid.csv"
 
 boost = sqlContext.read.load(data_path, format = 'com.databricks.spark.csv', header='true',inferSchema='true')  
 
-boost.count()
-
-1134749
+boost.count() #1134749
 
 ```text
 +------------------------+------------------------------------+
@@ -115,11 +103,7 @@ boost.count()
 |5ba3a739c307ad0007f0c405|b0f64a55-4b51-4016-962d-8f1a44e3a0a1|
 +------------------------+------------------------------------+
 ```
-boost = boost.drop('customerId')
-
-boost = boost.withColumnRenamed('MAID','ifa')
-
-from pyspark.sql.functions import lit
+boost = boost.select(lower(col('MAID')).alias('ifa'))
 
 boost1 = boost.withColumn('boost_user', lit(1))
 
@@ -128,7 +112,7 @@ boost1 = boost.withColumn('boost_user', lit(1))
 |ifa                                 |boost_user|
 +------------------------------------+----------+
 |a32e020d-57e4-4c75-9c75-73821d5f772d|1         |
-|E3ADB5FE-299F-4771-BCF6-8532605F6FB8|1         |
+|e3adb5fe-299f-4771-bcf6-8532605f6fb8|1         |
 |f109a7a2-7125-44de-8218-102e404a77f6|1         |
 |6fed81b8-8eec-4b17-b8c8-dc9ccc968b62|1         |
 |b0f64a55-4b51-4016-962d-8f1a44e3a0a1|1         |
@@ -136,9 +120,7 @@ boost1 = boost.withColumn('boost_user', lit(1))
 ```
 final = mm.join(boost1, mm.ifa==boost1.ifa,how='left').dropDuplicates().drop(boost1.ifa)
 
-final.count()
-
-129 
+final.count() #2151
 
 final1 = final.na.fill(0) 
 
