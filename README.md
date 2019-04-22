@@ -135,3 +135,10 @@ final1 = final.na.fill(0)
 |android    |fcd560d9-7b9a-4070-87bf-9526cda199aa|1             |0         |
 +-----------+------------------------------------+--------------+----------+
 ```
+mcd_non_boost = final1.filter(final1['boost_user'] == 0)           
+mcd_non_boost.count() #1832
+ 
+
+mcd_boost = final1.filter(final1['boost_user'] == 1) 
+mcd_boost.count() #319 
+
