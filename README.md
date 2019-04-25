@@ -45,6 +45,10 @@ geo1 = geo.withColumnRenamed('_c1','ifa')
 ```
 #merge with persona table (march 2019)
 
+#data5 = "s3a://ada-dev/zankai/playstore-bundle/output-special-201903/Boost_persona_mar19/*.snappy.parquet"
+#asn_wide = sqlContext.read.parquet(data5)
+#asn_wide.count() #13180614
+
 data5 = "s3a://ada-dev/fatin/7persona/7persona_mar19_revised/part-00000-8d439c4e-62ac-4baf-bc72-645cc7e79bf9-c000.csv"
 
 asn_wide = sqlContext.read.load(data5, format = 'com.databricks.spark.csv', header='true',inferSchema='true')
