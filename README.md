@@ -1,4 +1,4 @@
-# boost_campaign
+# Boost Pre Campaign
 Here is the documentation for Boost 'Pre' and 'Post' Campaign analysis.
 
 1.	The latitude longitude for the respective brand you can get it from this link
@@ -7,7 +7,7 @@ Here is the documentation for Boost 'Pre' and 'Post' Campaign analysis.
 3.	Start using PySpark in Cloud9, the scripts are as follow;
 
 
-# MCDONALDS
+# McDonalds
 
 #geofence result 
 
@@ -45,11 +45,23 @@ geo1 = geo.withColumnRenamed('_c1','ifa')
 ```
 #merge with persona table (march 2019)
 
-data5 = "s3a://ada-dev/zankai/playstore-bundle/output-special-201903/Boost_persona_mar19/*.snappy.parquet"
+data5 = "s3a://ada-dev/fatin/7persona/7persona_mar19_revised/part-00000-8d439c4e-62ac-4baf-bc72-645cc7e79bf9-c000.csv"
 
-asn_wide = sqlContext.read.parquet(data5)
+asn_wide = sqlContext.read.load(data5, format = 'com.databricks.spark.csv', header='true',inferSchema='true')
 
-asn_wide.count() #13180614 
+asn_wide.count() #6515823
+
+```text
++------------------------------------+---------------------+------+-------------+--------------+--------------------+-------------+-----------------+
+|ifa                                 |Entertainment-Junkies|Gamers|Health-Beauty|Money-Managers|Personal-Development|Phone-Phreaks|Sports-Enthusiast|
++------------------------------------+---------------------+------+-------------+--------------+--------------------+-------------+-----------------+
+|64410391-a991-4bb4-8e8f-abc16c7d1355|0                    |5     |0            |0             |0                   |0            |0                |
+|01a820fb-7145-49f0-ac32-4607729e8370|2                    |0     |0            |0             |0                   |0            |0                |
+|18e138af-ea44-463a-975a-8c3edaf11bfb|2                    |0     |0            |0             |0                   |0            |0                |
+|2317c6a9-bb20-410e-aef5-de5dd58b81b6|1                    |1     |0            |0             |0                   |0            |0                |
+|261723cc-c211-4695-8884-ea3e9f0cc5cc|1                    |0     |0            |0             |1                   |0            |0                |
++------------------------------------+---------------------+------+-------------+--------------+--------------------+-------------+-----------------+
+```text
 
 asn_wide = asn_wide.select('ifa','Money-Managers')
 
@@ -66,7 +78,7 @@ asn_wide = asn_wide.select('ifa','Money-Managers')
 ```
 join = geo1.join(asn_wide, geo1.ifa == asn_wide.ifa,how='inner').drop(geo1.ifa)
 
-join.count() #41564
+join.count() #26930
 
 ```text
 +------------------------------------+--------------+                           
@@ -135,10 +147,16 @@ final1 = final.na.fill(0)
 |android    |fcd560d9-7b9a-4070-87bf-9526cda199aa|1             |0         |
 +-----------+------------------------------------+--------------+----------+
 ```
-mcd_non_boost = final1.filter(final1['boost_user'] == 0)           
-mcd_non_boost.count() #1832
- 
+final1.coalesce(1).write.format("com.databricks.spark.csv").option("header", "true").save("s3a://ada-dev/fatin/boost/campaign/pre_mcd")
 
 mcd_boost = final1.filter(final1['boost_user'] == 1) 
-mcd_boost.count() #319 
+mcd_boost.count()
+319 
+
+mcd_non_boost = final1.filter(final1['boost_user'] == 0)           
+mcd_non_boost.count()
+1832   
+
+mcd_boost.coalesce(1).write.format("com.databricks.spark.csv").option("header", "true").save("s3a://ada-dev/fatin/boost/campaign/pre_mcd/pre_mcd_boost")
+mcd_non_boost.coalesce(1).write.format("com.databricks.spark.csv").option("header", "true").save("s3a://ada-dev/fatin/boost/campaign/pre_mcd/pre_mcd_non_boost")
 
