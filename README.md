@@ -166,7 +166,7 @@ mcd_non_boost.coalesce(1).write.format("com.databricks.spark.csv").option("heade
 
 # The outcome from this will be store in BO's One Drive;
 
-https://adparlorasia.sharepoint.com/:f:/r/sites/DSSE-BusinessOptimization/Shared%20Documents/Boost/campaign/{persona eg: entertainment_junkies}
+https://adparlorasia.sharepoint.com/DSSE-BusinessOptimization/Boost/campaign/{persona eg:entertainment_junkies}
 
 
 
