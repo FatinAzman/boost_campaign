@@ -164,3 +164,9 @@ mcd_non_boost.count()
 mcd_boost.coalesce(1).write.format("com.databricks.spark.csv").option("header", "true").save("s3a://ada-dev/fatin/boost/campaign/pre_mcd/pre_mcd_boost")
 mcd_non_boost.coalesce(1).write.format("com.databricks.spark.csv").option("header", "true").save("s3a://ada-dev/fatin/boost/campaign/pre_mcd/pre_mcd_non_boost")
 
+# The outcome from this will be store in BO's One Drive;
+
+https://adparlorasia.sharepoint.com/:f:/r/sites/DSSE-BusinessOptimization/Shared%20Documents/Boost/campaign/{persona eg: entertainment_junkies}
+
+
+
